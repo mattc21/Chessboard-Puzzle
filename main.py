@@ -1,7 +1,10 @@
+from multiprocessing.sharedctypes import Value
 from pyexpat.errors import XML_ERROR_UNKNOWN_ENCODING
 from config import *
 from random import randint
 from pygame import *
+import time
+import curses
 
 class Chessboard:
     def __init__(self):
@@ -40,12 +43,12 @@ class Chessboard:
         if letter >= 65 and letter - 65 < BOARDSIZE:
             return (letter- 65, number)
         else:
-            raise Exception("Error, chess positions are a letter followed by number")
+            raise ValueError("Error, chess positions are a letter followed by number")
 
     @staticmethod   
     def convertXYtoString(x: tuple):
         if len(x) != 2:
-            raise Exception("XY is a tuple of length 2")
+            raise ValueError("XY is a tuple of length 2")
         
         return str(ALPHABET[x[0]]) + str(x[1]+1)
 
@@ -53,7 +56,7 @@ class Chessboard:
         
 
 class Game:
-    def __init__(self, maxFlips = 1):
+    def __init__(self, maxFlips = MAXFLIPS):
         self.chessBoard = Chessboard()
         self.chessBoard.randomiseBoard()
         self.flips = 0
@@ -118,3 +121,81 @@ class Game:
                     return (x, y)
         
         raise Exception("Something bad occurred in calculateFlipLocation")
+
+    def flipsDone(self):
+        return self.flips >= self.maxFlips
+
+class SimpleView:
+    def __init__(self):
+        self.game = Game()
+    
+    def printScreen(self):
+        clear_screen()
+        board = self.game.getChessBoard().getBoard()
+
+        topBar = [str(n) for n in range(1, self.game.getChessBoard().getSize() + 1)]
+        temp = "    ".join(topBar)
+        print(" -- " + temp)
+        for i, row in enumerate(board):
+            pRow = ["H" if n else "T" for n in row]
+            print(chr(i + 65) + " " + str(pRow))
+
+    def help(self):
+        clear_screen()
+        print(HELPMESSAGE)
+
+    def processAction(self, s):
+        if s in ('H', 'h'):
+            self.help()
+            input("Press any key to continue.")
+            self.printScreen()
+        elif s in ('F', 'f'):
+            
+            square = input("Which square? ")
+            try: 
+                self.game.flipCoin(square)
+                self.printScreen()
+                print(square + " flipped")
+            except ValueError:
+                self.printScreen()
+                print("Error. Press F to flip or H for help ")
+        else:
+            self.printScreen()
+            print("Previous command not valid.")
+
+    def simpleGame(self):
+        self.printScreen()
+        while not self.game.flipsDone():
+            print("The key is hidden in " + Chessboard.convertXYtoString(self.game.getChessBoard().getKey()))
+            action = input("Enter 'H' for help or 'F' to choose coin to flip. ")
+            self.processAction(action)
+        
+        self.printScreen()
+        print("A coin has been flipped. You leave the room and your friend enters.")
+        print("Time to take a guess where the key is...")
+        
+        guessMade = False
+        while not guessMade:
+            guess = input("Make a guess: ")
+            try:
+                self.game.checkGuess(guess)
+                guessMade = True
+            except ValueError:
+                self.printScreen()
+                print("A coin has been flipped. You leave the room and your friend enters.")
+                print("Time to take a guess where the key is...")
+                print("Please enter a valid input.")
+
+
+        clear_screen()
+        if self.game.checkGuess(guess):
+            print(WINMESSAGE)
+        else:
+            print(LOSEMESSAGE)
+
+
+
+if __name__ == "__main__":
+    view = SimpleView()
+    view.simpleGame()
+
