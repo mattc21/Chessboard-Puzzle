@@ -1,10 +1,10 @@
+from ctypes.wintypes import DOUBLE
 from multiprocessing.sharedctypes import Value
 from pyexpat.errors import XML_ERROR_UNKNOWN_ENCODING
 from config import *
 from random import randint
 from pygame import *
-import time
-import curses
+
 
 class Chessboard:
     def __init__(self):
@@ -126,9 +126,11 @@ class Game:
         return self.flips >= self.maxFlips
 
 class SimpleView:
-    def __init__(self):
+    def __init__(self, mode = SINGLE):
+        if mode not in (SINGLE, TWOPLAYER):
+            raise ValueError("ONLY MODES ARE SINGLE AND TWOPLAYER")
         self.game = Game()
-    
+        self.mode = mode
     def printScreen(self):
         clear_screen()
         board = self.game.getChessBoard().getBoard()
@@ -142,15 +144,27 @@ class SimpleView:
 
     def help(self):
         clear_screen()
-        print(HELPMESSAGE)
+        if self.mode == SINGLE:
+            print(CONTEXT_SINGLE_PLAYER1)
+            input("Press any key to continue.")
+            clear_screen()
+            print(CONTEXT_SINGLE_PLAYER2)
+            input("Press any key to continue.")
+            clear_screen()
+            print(CONTEXT_SINGLE_PLAYER3A)
+        else:
+            print(CONTEXT_TWO_PLAYER)
+
+        input("Press any key to continue.")
+
+
+
 
     def processAction(self, s):
         if s in ('H', 'h'):
             self.help()
-            input("Press any key to continue.")
             self.printScreen()
         elif s in ('F', 'f'):
-            
             square = input("Which square? ")
             try: 
                 self.game.flipCoin(square)
@@ -164,6 +178,62 @@ class SimpleView:
             print("Previous command not valid.")
 
     def simpleGame(self):
+        if self.mode == SINGLE:
+            self.singlePlayerGame()
+        elif self.game == TWOPLAYER:
+            self.twoPlayerGame()
+        else:
+            raise ValueError("Only modes are single player or double player.")
+    
+    def singlePlayerGame(self):
+        temp = Chessboard.convertXYtoString(self.game.calculateFlipLocation())
+        self.game.flipCoin(temp)
+        
+        self.printScreen()
+        print("The witch has flipped a coin")
+        print("Time to take a guess where the key is...")
+        guessMade = False
+        while not guessMade:
+            guess = input("Make a guess: ")
+            if self.checkInputs(guess):
+                input("Press any key to continue")
+                self.printScreen()
+                print("The witch has flipped a coin.")
+                print("Time to take a guess where the key is...")
+                print("Please enter a valid input.")
+                continue
+            try:
+                self.game.checkGuess(guess)
+                guessMade = True
+            except ValueError:
+                self.printScreen()
+                print("The witch has flipped a coin.")
+                print("Time to take a guess where the key is...")
+                print("Please enter a valid input.")
+
+        clear_screen()
+        if self.game.checkGuess(guess):
+            print(WINMESSAGE_SINGLE)
+        else:
+            print(LOSEMESSAGE_SINGLE) 
+            print(self.game.getChessBoard().getKey())
+    
+    def checkInputs(self, s):
+        """This checks whether user is asking for helps, hints or candy"""
+        if s in ('H', 'h'):
+            self.help()
+            self.printScreen()
+        elif s in ("CHEAT", "Cheat", "cheat"):
+            print("You have accessed the secret cheat power")
+            print("The board encoding is:" + format(self.game.calculateBoardValue(), '#008b'))
+            print("If you can't figure the answer' you're pretty dumb.")
+        elif s in ("CANDY", "Candy"):
+            print("There is no candy...")
+        else:
+            return False
+        return True
+
+    def twoPlayerGame(self):
         self.printScreen()
         while not self.game.flipsDone():
             print("The key is hidden in " + Chessboard.convertXYtoString(self.game.getChessBoard().getKey()))
@@ -186,16 +256,17 @@ class SimpleView:
                 print("Time to take a guess where the key is...")
                 print("Please enter a valid input.")
 
-
         clear_screen()
         if self.game.checkGuess(guess):
-            print(WINMESSAGE)
+            print(WINMESSAGE_TWO)
         else:
-            print(LOSEMESSAGE)
+            print(LOSEMESSAGE_TWO)
+
+
 
 
 
 if __name__ == "__main__":
-    view = SimpleView()
+    view = SimpleView(SINGLE)
     view.simpleGame()
 
