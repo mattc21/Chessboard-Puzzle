@@ -1,6 +1,3 @@
-from ctypes.wintypes import DOUBLE
-from multiprocessing.sharedctypes import Value
-from pyexpat.errors import XML_ERROR_UNKNOWN_ENCODING
 from config import *
 from random import randint
 from pygame import *
