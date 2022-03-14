@@ -1,6 +1,5 @@
 from config import *
 from random import randint
-from pygame import *
 
 
 class Chessboard:
