@@ -6,7 +6,14 @@ from curses.textpad import rectangle
 from main import *
 from config import *
 
-
+def flush_input():
+    try:
+        import msvcrt
+        while msvcrt.kbhit():
+            msvcrt.getch()
+    except ImportError:
+        import sys, termios    #for linux/unix
+        termios.tcflush(sys.stdin, termios.TCIOFLUSH)
 
 class View:
     def __init__(self):
@@ -179,6 +186,7 @@ class View:
                 self.displayBoard.addch("\n")
             self.displayBoard.refresh()
             time.sleep(0.1)
+        flush_input()
     
     def playPuzzle(self):
         self.stdscr.nodelay(True)
@@ -231,7 +239,7 @@ class View:
             self.displayBoard.refresh()
         else:
             temp = "H" if self.board[row][col] else "T"
-            self.displayBoard.addstr(row, col*3 + 1, temp)
+            self.displayBoard.addstr(row, col*3 + 1, temp, self.RED)
             self.displayBoard.refresh()
         self.onOff = not self.onOff
         self.prevBlink = (row, col)
