@@ -26,14 +26,13 @@ Good luck! You were given a chance to create a strategy with your friend beforeh
 """
 
 CONTEXT_SINGLE_PLAYER1 = """Scenario:
-After escaping a treacherous dungeon, you feel bad for the witch who trapped you there as she seems 
-to be stuck in the dungeon and rather lonely.
+You are stuck in a dungeon with a witch. After a long fight, the witch 
+reveals that she too is trapped. This is because she must solve a 
+puzzle in a special room. However, the puzzle requires two people 
+to complete.
 
-You stupidly leave adventurer friend behind, and head back into the dungeon. Meeting the witch, she
-reveals that for her to leave the dungeon, she must solve a puzzle in a special room. However, the 
-puzzle requires two people to complete. As such she has been trapped here for a very long time. 
-Now you must, with the witch complete the puzzle and save the witch and yourself from eternal 
-boredom in the dungeon.
+Now you must, with the witch complete the puzzle and save the witch 
+and yourself from eternal boredom in the dungeon.
 """
 
 CONTEXT_SINGLE_PLAYER2 = """Gameplay:
@@ -83,6 +82,17 @@ THE WITCH IS DELIGHTED TO HAVE NEW COMPANY.
 YOU LOSE YOUR CHANCE AT FREEDOM.
 """
 
+DUNGEON_IMAGE = """__________________________
+||          ||          ||
+||          ||          ||
+||          ||          ||
+||          ||          ||
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾"""
+
+CHESSBOARD_X = 10
+CHESSBOARD_Y = 10
+
+TERMINAL_SIZE_REQUIREMENTS = (24, 100)
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
