@@ -1,8 +1,9 @@
 import os
 
-SINGLE = 0
-TWOPLAYER = 1
-
+SINGLE = True
+TWOPLAYER = False
+LEFT = True
+RIGHT = False
 HEADS = 1
 TAILS = 0
 BOARDSIZE = 8
