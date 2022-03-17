@@ -42,21 +42,23 @@ class View:
         self.startScreen()
         self.mode = self.playerPrompt()
         self.playContext()
-        self.shuffleBoardAnimation()
+        self.gameExplanation()
         self.printBoard()
         self.playPuzzle()
 
     def startScreen(self):
         """ Start screen animation"""
         self.stdscr.nodelay(True)    
-        pad = curses.newpad(1, 100)
+        pad = curses.newpad(1, 70)
         self.stdscr.refresh()
         pad.addstr("Welcome to the Nearly Impossible Chessboard Puzzle")
 
+
         for i in range(50):
             try:
-                self.stdscr.getch()
-                break
+                key = self.stdscr.getch()
+                if key == 32: 
+                    break
             except:
                 pass
             self.stdscr.clear()
@@ -64,7 +66,7 @@ class View:
             pad.refresh(0, 0, 5, 5, 6, 10 + i)
             time.sleep(0.1)
 
-        pad.refresh(0, 0, 5, 5, 6, 60)
+        pad.refresh(0, 0, 5, 5, 6, 70)
         self.stdscr.getch()
 
     def playerPrompt(self):
@@ -150,14 +152,23 @@ class View:
             self.displayBoard.addch("\n")
         self.displayBoard.refresh()
 
-    def shuffleBoardAnimation(self):
+    def gameExplanation(self):
         self.stdscr.clear()
+        self.stdscr.refresh()
+        self.explanation = curses.newwin(15, 80, SIDEBOARD_Y, SIDEBOARD_X)
+        for line in CONTEXT_SINGLE_PLAYER2:
+            self.explanation.addstr(line)
+        self.explanation.refresh()
+        self.stdscr.refresh()
+        self.shuffleBoardAnimation()
+
+    def shuffleBoardAnimation(self):
         rectangle(self.stdscr, CHESSBOARD_Y-2,CHESSBOARD_X-2, CHESSBOARD_Y-2+11, CHESSBOARD_X-2+28)
         self.stdscr.refresh()
         self.board = self.game.getChessBoard().getBoard()
         if not self.displayBoard:
             self.displayBoard = curses.newwin(9, 26, CHESSBOARD_Y, CHESSBOARD_X)
-        for i in range(15):
+        for i in range(30):
             self.displayBoard.clear()
             for row in self.board:
                 for _ in row:
@@ -173,6 +184,7 @@ class View:
         self.stdscr.nodelay(True)
         row, col = 0, 0
         self.stdscr.refresh()
+        self.displayBoard.addstr(0, 0, " ")
         prevTime = time.time()
         while True:
             try:
@@ -188,7 +200,7 @@ class View:
             elif key == curses.KEY_DOWN:
                 row += 1
             elif key == curses.KEY_ENTER or key == 10 or key == 13:
-                pass
+                break
             elif key == 27:
                 exit()
             if col > 7:
@@ -204,7 +216,7 @@ class View:
             if time.time() - prevTime > 0.1:
                 self.blink(row, col)
                 prevTime = time.time()
-
+        self.checkWin(row, col)
 
     def blink(self, row, col):
         """ Blinks a certain position on chessboard"""
@@ -223,6 +235,16 @@ class View:
             self.displayBoard.refresh()
         self.onOff = not self.onOff
         self.prevBlink = (row, col)
+
+    def checkWin(self, row, col):
+        self.stdscr.nodelay(False)
+        self.stdscr.clear()
+        if self.game.checkGuess(row, col):
+            self.stdscr.addstr(25, 25, "You win!")
+        else:
+            self.stdscr.addstr(25, 25, "You lose", self.RED)
+        self.stdscr.refresh()
+        self.stdscr.getch()
 
 def main():
     view = View()

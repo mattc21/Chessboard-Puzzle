@@ -35,29 +35,32 @@ Now you must, with the witch complete the puzzle and save the witch
 and yourself from eternal boredom in the dungeon.
 """
 
-CONTEXT_SINGLE_PLAYER2 = """Gameplay:
-One participant must first enter the room. In the room is a {BOARDSIZE} x {BOARDSIZE} chessboard. 
-In a compartment within one of the squares is the magic key to escape. Apart starting the game, 
-the key will be randomy placed in a compartment within one of the squares of the chessboard. The 
-first participant will know where the key is, but the second, waiting outside, will not. 
+CONTEXT_SINGLE_PLAYER2 = f"""Gameplay:
+One participant must first enter the room. In the room is a {BOARDSIZE} 
+x {BOARDSIZE} chessboard. In a compartment within one of the squares is 
+the magic key to escape. After starting the game, the key will be randomly
+ placed in a compartment within one of the squares of the chessboard. The 
+first participant will know where the key is, but the second, waiting 
+outside, will not. 
 
-On top of each of the squares is a coin, randomly flipped heads or tails. The first participant may
-flip one coin, after which they are teleported to the waiting room. The second participant enters
-immediately after. Using only the coins, the participant must then determine where the key is in
-one try. If the participant fails, the duo will be forever trapped in the dungeon!
+On top of each of the squares is a coin, randomly flipped heads or tails. 
+The first participant may flip one coin, after which they are teleported 
+to the waiting room. The second participant enters immediately after. 
+Using only the coins, the participant must then determine where the key is in
+one try. If the second participant fails, the duo will be forever trapped 
+in the dungeon!
 """
 
 CONTEXT_SINGLE_PLAYER3A = """Strategy:
-The witch decides to go first. She explains a strategy to you. She will assign each position on the
-board, a number from 0 to 63. A1 is given the number 0, A2 is given the number 1 and so forth till
-H8 is given the number 63.
+The witch decides to go first as she is a strong mathematician. She has 
+devised a winning strategy. She will assign each position on the
+board, a number from 0 to 63. The top-left corner being 0 and the 
+bottom-right corner being 63
 
-The code for where the key is will be the number but in binary.
-
-The chessboard state will point to exactly the key location. The state can be calculated by bitwise
-addition of each of the squares where the coin has heads facing upwards.
-
-With this strategy, you are now responsible for choosing the correct location.
+She will use the chessboard state to point out the key location. The state 
+is calculated by bitwise addition without carry of the value of the squares
+where the coin has heads facing upwards. Then by converting this binary 
+number back to decimal, you will find the key location.
 """
 
 WINMESSAGE_SINGLE = """
@@ -92,7 +95,10 @@ DUNGEON_IMAGE = """__________________________
 CHESSBOARD_X = 10
 CHESSBOARD_Y = 10
 
-TERMINAL_SIZE_REQUIREMENTS = (24, 100)
+SIDEBOARD_X = 40
+SIDEBOARD_Y = 10
+
+TERMINAL_SIZE_REQUIREMENTS = (24, 120)
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
