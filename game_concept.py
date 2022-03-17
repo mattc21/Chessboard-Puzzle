@@ -1,4 +1,52 @@
-from main import *
+from config import *
+from random import randint
+
+
+class Chessboard:
+    def __init__(self):
+        self.size = BOARDSIZE
+        self.board = [[0 for _ in range(self.size)] for _ in range(self.size)]
+        self.key = (randint(0, self.size - 1), randint(0, self.size - 1))
+    
+    def randomiseBoard(self):
+        self.board = [[randint(0, 1) for _ in range(self.size)] for _ in range(self.size)]
+        
+    def placeKey(self, s: str):
+        self.key = Chessboard.convertStringToXY(s)
+    
+    def flipCoin(self, s: str):
+        x, y = Chessboard.convertStringToXY(s)
+        self.board[x][y] ^= 1
+
+    def getBoard(self):
+        return self.board
+
+    def getKey(self):
+        return self.key
+    
+    def getSize(self):
+        return self.size
+
+    @staticmethod
+    def convertStringToXY(s: str):
+        """ Converts a chess position string to an x y coordinate. A typical chess coordinate is A1 """
+        
+        letter = ord(s[0])
+        number = int(s[1:]) - 1
+
+        if letter >= 97 and letter - 97 < BOARDSIZE:
+            return (letter- 97, number)
+        if letter >= 65 and letter - 65 < BOARDSIZE:
+            return (letter- 65, number)
+        else:
+            raise ValueError("Error, chess positions are a letter followed by number")
+
+    @staticmethod   
+    def convertXYtoString(x: tuple):
+        if len(x) != 2:
+            raise ValueError("XY is a tuple of length 2")
+        
+        return str(ALPHABET[x[0]]) + str(x[1]+1)
 
 class GameConcept:
     def __init__(self, maxFlips = MAXFLIPS):
