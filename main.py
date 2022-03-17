@@ -11,12 +11,11 @@ class Chessboard:
     def randomiseBoard(self):
         self.board = [[randint(0, 1) for _ in range(self.size)] for _ in range(self.size)]
         
-    def placeKey(self, s: str):
-        self.key = Chessboard.convertStringToXY(s)
+    def placeKey(self, row, col):
+        self.key = (row, col)
     
-    def flipCoin(self, s: str):
-        x, y = Chessboard.convertStringToXY(s)
-        self.board[x][y] ^= 1
+    def flipCoin(self, row, col):
+        self.board[row][col] ^= 1
 
     def getBoard(self):
         return self.board
@@ -27,26 +26,6 @@ class Chessboard:
     def getSize(self):
         return self.size
 
-    @staticmethod
-    def convertStringToXY(s: str):
-        """ Converts a chess position string to an x y coordinate. A typical chess coordinate is A1 """
-        
-        letter = ord(s[0])
-        number = int(s[1:]) - 1
-
-        if letter >= 97 and letter - 97 < BOARDSIZE:
-            return (letter- 97, number)
-        if letter >= 65 and letter - 65 < BOARDSIZE:
-            return (letter- 65, number)
-        else:
-            raise ValueError("Error, chess positions are a letter followed by number")
-
-    @staticmethod   
-    def convertXYtoString(x: tuple):
-        if len(x) != 2:
-            raise ValueError("XY is a tuple of length 2")
-        
-        return str(ALPHABET[x[0]]) + str(x[1]+1)
 
     
 
@@ -70,8 +49,8 @@ class Game:
     def placeKey(self, s: str):
         self.chessBoard.placeKey(s)
 
-    def checkGuess(self, s: str):
-        if Chessboard.convertStringToXY(s) == self.chessBoard.getKey():
+    def checkGuess(self, row, col):
+        if row == self.chessBoard.getKey()[0] and col == self.chessBoard.getKey()[1]:
             return True
         return False
 
@@ -79,11 +58,11 @@ class Game:
         return self.chessBoard
 
     def getKeyEncoding(self):
-        x, y = self.chessBoard.getKey()
-        return self.getBinaryEncoding(x, y) 
+        row, col = self.chessBoard.getKey()
+        return self.getBinaryEncoding(row, col) 
 
-    def getBinaryEncoding(self, x, y):
-        return x + (y * self.chessBoard.getSize())
+    def getBinaryEncoding(self, row, col):
+        return row + (col * self.chessBoard.getSize())
     
     def calculateBoardValue(self):
         """
@@ -91,10 +70,10 @@ class Game:
         position on the board
         """
         ret = 0
-        for x, row in enumerate(self.chessBoard.getBoard()):
-            for y, value in enumerate(row):
+        for i, row in enumerate(self.chessBoard.getBoard()):
+            for j, value in enumerate(row):
                 if value:
-                    ret ^= self.getBinaryEncoding(x, y)
+                    ret ^= self.getBinaryEncoding(i, j)
         # format(ret, '#008b')
         return ret
 
@@ -112,10 +91,10 @@ class Game:
         curr = self.calculateBoardValue()
         desired = self.getKeyEncoding()
         changes = (curr ^ desired) & int("1"*numBits, 2)
-        for x, row in enumerate(self.chessBoard.getBoard()):
-            for y, value in enumerate(row):
-                if self.getBinaryEncoding(x, y) == changes:
-                    return (x, y)
+        for i, row in enumerate(self.chessBoard.getBoard()):
+            for j, value in enumerate(row):
+                if self.getBinaryEncoding(i, j) == changes:
+                    return (i, j)
         
         raise Exception("Something bad occurred in calculateFlipLocation")
 
