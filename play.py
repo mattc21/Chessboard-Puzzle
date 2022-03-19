@@ -27,7 +27,8 @@ class View:
         """ Game starts here"""
         if os.get_terminal_size().lines < TERMINAL_SIZE_REQUIREMENTS[0] or os.get_terminal_size().columns < TERMINAL_SIZE_REQUIREMENTS[1]:
             print(os.get_terminal_size())
-            print("Please resize your terminal window to a larger size and try again.")
+            stdscr.addstr("Please resize your terminal window to a larger size and try again.")
+            stdscr.getch()
             exit()
 
         curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_YELLOW)
