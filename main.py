@@ -41,9 +41,9 @@ class Game:
     def resetGame(self):
         self.chessBoard.randomiseBoard()
 
-    def flipCoin(self, s: str):
+    def flipCoin(self, r: int, c: int):
         if self.flips < self.maxFlips:
-            self.chessBoard.flipCoin(s)
+            self.chessBoard.flipCoin(r, c)
             self.flips += 1
 
     def placeKey(self, s: str):
@@ -62,7 +62,7 @@ class Game:
         return self.getBinaryEncoding(row, col) 
 
     def getBinaryEncoding(self, row, col):
-        return row + (col * self.chessBoard.getSize())
+        return col + (row * self.chessBoard.getSize())
     
     def calculateBoardValue(self):
         """
@@ -79,7 +79,8 @@ class Game:
 
     def calculateFlipLocation(self):
         """
-        We calculate which coin to flip such that board value is         
+        We calculate which coin to flip such that board value will point
+        to the key.     
         """
         size = self.chessBoard.getSize()
         

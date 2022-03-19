@@ -15,6 +15,16 @@ def flush_input():
         import sys, termios    #for linux/unix
         termios.tcflush(sys.stdin, termios.TCIOFLUSH)
 
+def waitForPress(stdscr):
+    flush_input()
+    while True:
+        try:
+            key = stdscr.getch()
+            if key != -1:
+                break
+        except:
+            pass
+
 class View:
     def __init__(self):
         self.mode = SINGLE
@@ -23,6 +33,7 @@ class View:
         self.onOff = False
         self.stdscr = None
         self.prevBlink = (0,0)
+
     def start(self, stdscr):
         """ Game starts here"""
         if os.get_terminal_size().lines < TERMINAL_SIZE_REQUIREMENTS[0] or os.get_terminal_size().columns < TERMINAL_SIZE_REQUIREMENTS[1]:
@@ -39,14 +50,8 @@ class View:
         self.RED = curses.color_pair(3)
         stdscr.refresh()
 
-        # temp = curses.newwin(50, 50, 1, 1)
-        # temp.addstr(5,5, "hello", self.RED)
-        # temp.refresh()
-        # temp.addstr(5,5, "boyzzz", self.RED)
-        # temp.refresh()
-        # stdscr.getch()
-
         self.stdscr = stdscr
+        self.stdscr.nodelay(True)    
         self.startScreen()
         self.mode = self.playerPrompt()
         self.playContext()
@@ -56,16 +61,15 @@ class View:
 
     def startScreen(self):
         """ Start screen animation"""
-        self.stdscr.nodelay(True)    
         pad = curses.newpad(1, 70)
         self.stdscr.refresh()
-        pad.addstr("Welcome to the Nearly Impossible Chessboard Puzzle")
+        pad.addstr("Welcome to the Nearly Impossible Chessboard Puzzle.")
 
 
         for i in range(50):
             try:
                 key = self.stdscr.getch()
-                if key == 32: 
+                if key != -1: 
                     break
             except:
                 pass
@@ -75,7 +79,7 @@ class View:
             time.sleep(0.1)
 
         pad.refresh(0, 0, 5, 5, 6, 70)
-        self.stdscr.getch()
+        waitForPress(self.stdscr)
 
     def playerPrompt(self):
         """
@@ -83,8 +87,6 @@ class View:
         implementing solo player.
         """
         self.stdscr.refresh()  
-        
-        self.stdscr.nodelay(True)
         side = RIGHT
         while True:
             try:
@@ -137,8 +139,7 @@ class View:
         dungeon_image.addstr("Press any key to continue", self.RED)
         dungeon_image.refresh()
         pad.refresh(0, 0, 5, 5, 15, 100)
-        self.stdscr.nodelay(False)    
-        self.stdscr.getch()
+        waitForPress(self.stdscr)
 
     def printBoard(self):
         """
@@ -169,6 +170,12 @@ class View:
         self.explanation.refresh()
         self.stdscr.refresh()
         self.shuffleBoardAnimation()
+        r, c = self.game.calculateFlipLocation()
+        self.game.flipCoin(r, c)
+        self.stdscr.clear()
+        self.stdscr.addstr("The witch has done the maths and flipped a coin.\n Press any key to continue.")
+        self.stdscr.refresh()
+        waitForPress(self.stdscr)
 
     def shuffleBoardAnimation(self):
         rectangle(self.stdscr, CHESSBOARD_Y-2,CHESSBOARD_X-2, CHESSBOARD_Y-2+11, CHESSBOARD_X-2+28)
@@ -176,7 +183,13 @@ class View:
         self.board = self.game.getChessBoard().getBoard()
         if not self.displayBoard:
             self.displayBoard = curses.newwin(9, 26, CHESSBOARD_Y, CHESSBOARD_X)
-        for i in range(30):
+        while True:
+            try:
+                key = self.stdscr.getch()
+                if key != -1:
+                    break
+            except:
+                pass
             self.displayBoard.clear()
             for row in self.board:
                 for _ in row:
@@ -190,10 +203,12 @@ class View:
         flush_input()
     
     def playPuzzle(self):
-        self.stdscr.nodelay(True)
         row, col = 0, 0
         self.stdscr.refresh()
         self.displayBoard.addstr(0, 0, " ")
+        self.help = curses.newwin(15, 80, SIDEBOARD_Y, SIDEBOARD_X)
+        self.help.addstr("Guess the correct position of the key. Press tab for hint.")
+        self.help.refresh()
         prevTime = time.time()
         while True:
             try:
@@ -208,9 +223,13 @@ class View:
                 row -= 1
             elif key == curses.KEY_DOWN:
                 row += 1
-            elif key == curses.KEY_ENTER or key == 10 or key == 13:
+            elif key == curses.KEY_ENTER or key == 10 or key == 13:     #Enter key
                 break
-            elif key == 27:
+            elif key == 9:             # H key
+                binaryState = self.game.calculateBoardValue()
+                self.stdscr.addstr(35, 50, f"The code is {format(self.game.calculateBoardValue(), '#008b')} \r")
+                self.stdscr.refresh()
+            elif key == 27:             # Escape key
                 exit()
             if col > 7:
                 col = 7
@@ -246,14 +265,19 @@ class View:
         self.prevBlink = (row, col)
 
     def checkWin(self, row, col):
-        self.stdscr.nodelay(False)
         self.stdscr.clear()
         if self.game.checkGuess(row, col):
             self.stdscr.addstr(25, 25, "You win!")
+            self.stdscr.addstr(26, 25, "You escape with the witch who promptly turns you into a frog.")
         else:
-            self.stdscr.addstr(25, 25, "You lose", self.RED)
+            self.printBoard()
+            correctRow, correctCol = self.game.getChessBoard().getKey()
+            temp = "H" if self.board[correctRow][correctCol] else "T"
+            self.displayBoard.addstr(correctRow, correctCol*3 + 1, temp, self.GREEN_AND_RED)
+            self.displayBoard.refresh()
+            self.stdscr.addstr(35, 50, f"You lose. The key was in row {correctRow} and column {correctCol}.", self.RED)
         self.stdscr.refresh()
-        self.stdscr.getch()
+        waitForPress(self.stdscr)
 
 def main():
     view = View()
